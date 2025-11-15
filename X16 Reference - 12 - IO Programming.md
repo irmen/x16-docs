@@ -1,7 +1,9 @@
 
 # Chapter 12: I/O Programming
 
-There are two 65C22 "Versatile Interface Adapter" (VIA) I/O controllers in the system, VIA#1 at address \$9F00 and VIA#2 at address \$9F10. The IRQ out pin of VIA#1 is connected to the CPU's IRQ line, while the IRQ out pin of VIA#2 can be configured via jumper to connect to either the CPU's IRQ or NMI line on production boards (those beginning with serial PR), or hardwired to the CPU's IRQ line on earlier boards.  
+There are two 65C22 "Versatile Interface Adapter" (VIA) I/O controllers in the system, VIA#1 and VIA#2. The address range \$9F00 to \$9F0F maps to VIA#1's internal registers \$0 to \$F. Likewise, the address range \$9F10 to \$9F1F maps to VIA#2's internal registers. Details on the internal registers can be found in the published datasheet: <https://www.westerndesigncenter.com/wdc/documentation/w65c22.pdf>.
+
+The IRQ out pin of VIA#1 is connected to the CPU's IRQ line, while the IRQ out pin of VIA#2 can be configured via jumper to connect to either the CPU's IRQ or NMI line on production boards (those beginning with serial PR), or hardwired to the CPU's IRQ line on earlier boards.
 
 The-following tables describe the connections of the I/O pins:
 
@@ -40,7 +42,16 @@ The second VIA is completely unused by the KERNAL. All its 16 GPIOs and 4 handsh
 
 The Commander X16 contains an I2C bus, which is implemented through two pins of VIA#1. The system management controller (SMC) and the real-time clock (RTC) are connected through this bus. The KERNAL APIs `i2c_read_byte` and `i2c_write_byte` allow talking to these devices.
 
+| Address             | Target                                                                      |
+|---------------------|-----------------------------------------------------------------------------|
+| `1000010 ($42)`     | [System Management Controller (SMC)](#system-Management-Controller)         |
+| `1010??? ($50-$57)` | [Non-volatile storage for cartridges](#non-volatile-storage-for-cartridges) |
+| `1101111 ($6F)`     | [Real-Time Clock (RTC)](#real-time-clock)                                   |
+
+
 ### System Management Controller
+
+**I2C address: $42**
 
 The system management controller (SMC) is device $42 on the I2C bus. It controls the activity LED, and can be used to power down the system or inject RESET and NMI signals. It also handles communication with
 the PS/2 keyboard and mouse.
@@ -64,10 +75,22 @@ the PS/2 keyboard and mouse.
 | $22      | -              | Get mouse device ID |
 | $30      | -              | Get SMC firmware version, major |
 | $31      | -              | Get SMC firmware version, minor |
-| $32      | -              | Get SMC firmare version, patch |
+| $32      | -              | Get SMC firwmare version, patch |
 | $8F      | $31            | Start bootloader, if present |  
 
+### Non-volatile storage for cartridges
+
+**I2C address: $50-$57**
+
+#### Commander X16 ROM Cartridge
+[Commander X16 ROM Cartridge](https://texelec.com/product/commander-x16-cartridge/) supports up to 4 128kB EEPROM chips in the $50-$57 address range. Address is chosen based on IC slot on the PCB. Chip type: **Onsemi CAT24M01**
+
+#### ROAM Commander X16 Cartridge
+[ROAM Commander X16 Cartridge](https://www.tindie.com/products/wavicle/roam-commander-x16-cartridge/), by Wavicle, features 1 8kB FRAM chip in the $50-$57 address range. Address is configurable by dip-switches. Chip type: **FM24C64B**
+
 ### Real-Time-Clock
+
+**I2C address: $6F**
 
 The Commander X16 contains a battery-backed Microchip MCP7940N real-time-clock (RTC) chip as device $6F. It provides a real-time clock/calendar, two alarms and 64 bytes of battery-backed SRAM (non-volatile RAM).
 

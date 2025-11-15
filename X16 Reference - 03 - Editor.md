@@ -114,7 +114,7 @@ If there are two meanings listed, the first indicates input (a keypress) and the
 | $08  | DISALLOW CHARSET SW (SHIFT+ALT) | F7                        | $88  |
 | $09  | **TAB** / ALLOW CHARSET SW | F2                        | $89  |
 | $0A  | **LF**                     | F4                        | $8A  |
-| $0B  | -                          | F6                        | $8B  |
+| $0B  | **LAYOUT SWAP**            | F6                        | $8B  |
 | $0C  | -                          | F8                        | $8C  |
 | $0D  | RETURN                     | SHIFTED RETURN            | $8D  |
 | $0E  | CHARSET: LOWER/UPPER       | CHARSET: UPPER/PETSCII    | $8E  |
@@ -332,6 +332,8 @@ The BASIC command `KEYMAP` allows activating a specific keyboard layout. It can 
 SAVE"AUTOBOOT.X16
 ```
 
+PETSCII code 11 ($0B) or Ctrl+K is used to toggle between the current keyboard layout and the previously loaded one.  This function can be activated by pressing Ctrl+K in the BASIC editor or by sending the code to the screen with the BASIC PRINT command or the CHROUT KERNAL API call.  The layout swap function works only with built-in ROM-based layouts and will not properly swap back to a custom layout in RAM.
+
 ### Loadable Keyboard Layouts
 
 The tables for the active keyboard layout reside in banked RAM, at $A000 on bank 0:
@@ -408,7 +410,7 @@ Here is an example that activates a layout derived from "ABC/X16", with unshifte
 
 ### Custom BASIN PETSCII code override handler
 
-**Note**: This is a new feature in R44
+**Note**: This behavior only exists in R44 or later
 
 Some use cases of the BASIN (CHRIN) API call may benefit from being able to modify its behavior, such as intercepting or redirecting certain PETSCII codes.  The Machine Language Monitor uses this mechanism to implement custom behavior for F-keys and for loading additional disassembly or memory display when scrolling the screen.
 
@@ -489,7 +491,7 @@ start:
 
 ### Custom Keyboard Keynum Code Handler
 
-**Note**: This is new behavior for R43, differing from previous releases.
+**Note**: This behavior is for R43 or later, differing from previous releases.
 
 If you need more control over the translation of keynum codes into PETSCII/ISO codes, or if you need to intercept any key down or up event, you can hook the custom scancode handler vector at $032E/$032F.
 
